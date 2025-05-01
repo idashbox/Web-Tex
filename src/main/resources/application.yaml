@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: demo3
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/webtex
+      username: root
+      password: 1234567
+      database: webtex
+    jpa:
+      show-sql: true
+    servlet:
+      multipart:
+        max-request-size: 20MB
+
+  logging:
+    level:
+      root: INFO
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/webtex
+    username: postgres
+    password: 1234567
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      show-sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:resources/db/migration
