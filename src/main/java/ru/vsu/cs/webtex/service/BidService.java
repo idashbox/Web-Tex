@@ -3,11 +3,15 @@ package ru.vsu.cs.webtex.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.vsu.cs.webtex.dto.BidDto;
-import ru.vsu.cs.webtex.model.Bid;
-import ru.vsu.cs.webtex.repository.BidRepository;
+import ru.vsu.cs.webtex.postgre.model.Bid;
+import ru.vsu.cs.webtex.postgre.model.Video;
+import ru.vsu.cs.webtex.postgre.repository.BidRepository;
+import ru.vsu.cs.webtex.postgre.repository.VideoRepository;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -15,23 +19,21 @@ import java.util.stream.Collectors;
 public class BidService {
 
     private final BidRepository bidRepository;
+    private final VideoRepository videoRepository;
 
     public List<BidDto> getAll() {
-        return bidRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        return bidRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    public BidDto getById(String id) {
-        return bidRepository.findById(id)
-                .map(this::toDto)
-                .orElseThrow(() -> new RuntimeException("Bid not found"));
+    public Optional<BidDto> getById(String id) {
+        return bidRepository.findById(id).map(this::toDto);
     }
 
     public BidDto create(BidDto dto) {
+        if (dto.getContent() == null || dto.getVideoId() == null || dto.getTimestamp() == null) {
+            throw new RuntimeException("Content, video ID, and timestamp are required");
+        }
         Bid bid = toEntity(dto);
-        bid.setTimestamp(LocalDateTime.now());
         return toDto(bidRepository.save(bid));
     }
 
@@ -43,17 +45,23 @@ public class BidService {
         return BidDto.builder()
                 .id(bid.getId())
                 .content(bid.getContent())
-                .videoId(bid.getVideoId())
+                .videoId(bid.getVideo() != null ? bid.getVideo().getId() : null)
                 .timestamp(bid.getTimestamp())
                 .build();
     }
 
     private Bid toEntity(BidDto dto) {
+        if (dto.getVideoId() == null) {
+            throw new RuntimeException("Video ID is required");
+        }
+        Video video = videoRepository.findById(String.valueOf(dto.getVideoId()))
+                .orElseThrow(() -> new RuntimeException("Video not found with ID " + dto.getVideoId()));
+
         return Bid.builder()
                 .id(dto.getId())
                 .content(dto.getContent())
-                .videoId(dto.getVideoId())
-                .timestamp(dto.getTimestamp()) // если при создании будет null, то заменим в create()
+                .video(video)
+                .timestamp(dto.getTimestamp().atZone(ZoneId.systemDefault()).toInstant())
                 .build();
     }
 }

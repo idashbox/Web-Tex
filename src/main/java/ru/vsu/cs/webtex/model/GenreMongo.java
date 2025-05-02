@@ -1,18 +1,17 @@
 package ru.vsu.cs.webtex.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("genres")
+@Document("genre")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Genre {
+@Getter
+@Setter
+public class GenreMongo {
     @Id
     private String id;
     private String name;

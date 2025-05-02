@@ -3,8 +3,10 @@ package ru.vsu.cs.webtex.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.vsu.cs.webtex.dto.GenreDto;
-import ru.vsu.cs.webtex.model.Genre;
-import ru.vsu.cs.webtex.repository.GenreRepository;
+import ru.vsu.cs.webtex.model.GenreMongo;
+import ru.vsu.cs.webtex.postgre.model.Genre;
+import ru.vsu.cs.webtex.postgre.repository.GenreRepository;
+import ru.vsu.cs.webtex.repository.GenreMongoRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

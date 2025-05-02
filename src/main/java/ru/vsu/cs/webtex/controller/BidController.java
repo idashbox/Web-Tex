@@ -22,7 +22,9 @@ public class BidController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BidDto> getBid(@PathVariable String id) {
-        return ResponseEntity.ok(bidService.getById(id));
+        return bidService.getById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping

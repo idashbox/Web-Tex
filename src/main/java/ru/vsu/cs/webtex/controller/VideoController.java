@@ -22,8 +22,9 @@ public class VideoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<VideoDto> getById(@PathVariable String id) {
-        VideoDto dto = videoService.getById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build(); // вынести в сервис, выкинуть ошибку
+        return videoService.getById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -36,7 +37,7 @@ public class VideoController {
         VideoDto updated = videoService.update(id, dto);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
-//скрипт для монго
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         videoService.delete(id);

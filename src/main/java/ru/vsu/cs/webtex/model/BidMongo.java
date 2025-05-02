@@ -1,20 +1,19 @@
 package ru.vsu.cs.webtex.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document("bids")
+@Document("bid")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Bid {
+@Getter
+@Setter
+public class BidMongo {
     @Id
     private String id;
     private String content;

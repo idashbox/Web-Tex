@@ -1,24 +1,22 @@
 package ru.vsu.cs.webtex.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("videos")
+@Document("video")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Video {
+@Getter
+@Setter
+public class VideoMongo {
     @Id
     private String id;
 
     private String title;
-    //посмотреть анотацию
     @TextIndexed
     private String description;
 
