@@ -36,7 +36,6 @@ public class MongoToPostgresMigrator {
     @Autowired private BidMongoRepository bidMongoRepository;
 
     public void migrate() {
-        // Миграция жанров
         Map<String, Genre> genreMap = new HashMap<>();
         for (GenreMongo gm : mongoTemplate.findAll(GenreMongo.class)) {
             Genre g = new Genre();
@@ -45,7 +44,6 @@ public class MongoToPostgresMigrator {
             genreMap.put(gm.getId(), g);
         }
 
-        // Миграция видео
         Map<String, Video> videoMap = new HashMap<>();
         for (VideoMongo vm : mongoTemplate.findAll(VideoMongo.class)) {
             Video v = new Video();
@@ -56,12 +54,11 @@ public class MongoToPostgresMigrator {
             videoMap.put(vm.getId(), v);
         }
 
-        // Миграция ставок
         for (BidMongo bm : mongoTemplate.findAll(BidMongo.class)) {
             Bid b = new Bid();
             b.setContent(bm.getContent());
             b.setVideo(videoMap.get(bm.getVideoId()));
-            b.setTimestamp(bm.getTimestamp().toInstant(ZoneOffset.ofHours(3)));
+            b.setTimestamp(bm.getTimestamp().toInstant());
             bidRepository.save(b);
         }
 
@@ -70,7 +67,6 @@ public class MongoToPostgresMigrator {
     @Bean
     public CommandLineRunner migrateData() {
         return args -> {
-            // ----- MIGRATE GENRES -----
             System.out.println("----- ЖАНРЫ из Mongo -----");
             List<GenreMongo> mongoGenres = genreMongoRepository.findAll();
             Map<String, Genre> genreMap = new HashMap<>();
@@ -83,30 +79,38 @@ public class MongoToPostgresMigrator {
                 System.out.println(gm);
             }
 
-            // ----- MIGRATE VIDEOS -----
             System.out.println("----- ВИДЕО из Mongo -----");
             List<VideoMongo> mongoVideos = videoMongoRepository.findAll();
-            Map<String, Video> videoMap = new HashMap<>();
+            Map<String, Long> mongoIdToPostgresId = new HashMap<>();
 
             for (VideoMongo vm : mongoVideos) {
                 Video pgVideo = new Video();
                 pgVideo.setTitle(vm.getTitle());
                 pgVideo.setDescription(vm.getDescription());
-                pgVideo.setGenre(genreMap.get(vm.getGenreId())); // ссылка на уже сохранённый жанр
+                pgVideo.setGenre(genreMap.get(vm.getGenreId()));
                 videoRepository.save(pgVideo);
-                videoMap.put(vm.getId(), pgVideo);
+                mongoIdToPostgresId.put(vm.getId(), pgVideo.getId());
                 System.out.println(vm);
             }
 
-            // ----- MIGRATE BIDS -----
-            System.out.println("----- СТАВКИ из Mongo -----");
+            System.out.println("----- ЗАЯВКИ из Mongo -----");
             List<BidMongo> mongoBids = bidMongoRepository.findAll();
 
             for (BidMongo bm : mongoBids) {
                 Bid pgBid = new Bid();
                 pgBid.setContent(bm.getContent());
-                pgBid.setTimestamp(bm.getTimestamp().toInstant(ZoneOffset.UTC));
-                pgBid.setVideo(videoMap.get(bm.getVideoId()));
+                pgBid.setTimestamp(bm.getTimestamp().toInstant());
+
+                Long postgresVideoId = mongoIdToPostgresId.get(bm.getVideoId());
+                if (postgresVideoId != null) {
+                    videoRepository.findById(String.valueOf(postgresVideoId)).ifPresentOrElse(
+                            pgBid::setVideo,
+                            () -> System.err.println("Видео не найдено в Postgres по ID: " + postgresVideoId)
+                    );
+                } else {
+                    System.err.println("Не удалось сопоставить видео Mongo ID: " + bm.getVideoId());
+                }
+
                 bidRepository.save(pgBid);
                 System.out.println(bm);
             }
@@ -114,4 +118,5 @@ public class MongoToPostgresMigrator {
             System.out.println("Данные Bids мигрированы из Mongo в Postgres");
         };
     }
+
 }

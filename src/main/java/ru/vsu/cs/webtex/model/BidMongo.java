@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Document("bid")
 @Data
@@ -16,7 +17,11 @@ import java.time.LocalDateTime;
 public class BidMongo {
     @Id
     private String id;
+
     private String content;
+
     private String videoId;
-    private LocalDateTime timestamp;
+
+    private Date timestamp;
+
 }
