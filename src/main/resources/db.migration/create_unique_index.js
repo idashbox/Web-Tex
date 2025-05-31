@@ -1,0 +1,1 @@
+db.genres.createIndex({ name: 1 }, { unique: true });
